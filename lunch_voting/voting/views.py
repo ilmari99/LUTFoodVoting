@@ -48,13 +48,18 @@ def lunch_menu_view(request):
 
 
 def register_view(request):
+    error_message = None
     if request.method == 'POST':
+        print(request.POST)
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()
             # Automatically log the user in after successful registration
             login(request, user)
+            print(f"User {user.username} has registered successfully")
             return redirect('lunch_menu')  # Redirect to the voting page after login
+        else:
+            error_message = "There was an error with your registration. Please check the form and try again."
     else:
         form = CustomUserCreationForm()
-    return render(request, 'voting/register.html', {'form': form})
+    return render(request, 'voting/register.html', {'form': form, 'error_message': error_message})
