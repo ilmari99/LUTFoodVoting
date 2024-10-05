@@ -9,9 +9,6 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from .forms import CustomUserCreationForm
 
-# Load menu from a JSON file
-with open('voting/lunch_menus.json') as f:
-    LUNCH_MENUS = json.load(f)
 
 # Load vote counts from JSON file
 def load_votes():
@@ -27,9 +24,11 @@ def lunch_menu_view(request):
     today = timezone.now().date()
     user_has_voted = Vote.objects.filter(user=request.user, date=today).exists()
 
+    # After the user has voted, the page will display the vote counts
     if request.method == "POST":
         menu_item = request.POST.get("menu_item")
-        if not user_has_voted:
+
+        if True:
             # Save the user's vote
             Vote.objects.create(user=request.user, menu_item=menu_item)
             
@@ -43,14 +42,13 @@ def lunch_menu_view(request):
 
             return JsonResponse({"status": "success", "votes": votes})
 
-    votes = load_votes() if user_has_voted else None
-    return render(request, 'voting/lunch_menu.html', {"menus": LUNCH_MENUS, "votes": votes, "user_has_voted": user_has_voted})
+    votes = load_votes()
+    return render(request, 'voting/lunch_menu.html', {"votes": votes, "user_has_voted": user_has_voted, "username": request.user.username})
 
 
 def register_view(request):
     error_message = None
     if request.method == 'POST':
-        print(request.POST)
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save()

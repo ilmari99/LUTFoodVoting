@@ -4,30 +4,70 @@
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <title>Vote for Lunch Menu</title>
+    <style>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f8f9fa;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        .user-info span {
+            margin-right: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Today's Lunch Menus</h1>
+    <div class="header">
+        <h1>Today's Lunch Menus</h1>
+        <div class="user-info">
+            <span>Logged in as {{ username }}</span>
+            <form id="logoutForm" method="POST" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
+        </div>
+    </div>
     
     <form id="voteForm" method="POST">
         {% csrf_token %}
-        {% for menu in menus %}
+        {% for menu, count in votes.items %}
             <input type="radio" name="menu_item" value="{{ menu }}">{{ menu }}<br>
         {% endfor %}
         <button type="submit">Vote</button>
     </form>
 
-    <div id="voteResults" style="display: {% if user_has_voted %}block{% else %}none{% endif %};">
+    <div id="voteResults" style="display: block;">
         <h2>Vote Results:</h2>
         <ul>
             {% if votes %}
                 {% for menu, count in votes.items %}
                     <li>{{ menu }}: {{ count }} votes</li>
+                {% empty %}
+                    <li>No votes yet.</li>
                 {% endfor %}
+            {% else %}
+                <li>No votes yet.</li>
             {% endif %}
         </ul>
     </div>
-
     <script>
+        fetch('C:\\Users\\ilmari\\Desktop\\Python\\LUTFoodVoting\\lunch_voting\\voting\\lunch_menus.json')
+            .then(response => response.json())
+            .then(data => {
+                const form = document.getElementById('voteForm');
+                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                form.innerHTML = `<input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">`;
+                data.menus.forEach(menu => {
+                    form.innerHTML += `<input type="radio" name="menu_item" value="${menu}">${menu}<br>`;
+                });
+                form.innerHTML += '<button type="submit">Vote</button>';
+            });
+
         document.getElementById('voteForm').onsubmit = function(event) {
             event.preventDefault();
             const formData = new FormData(this);
@@ -42,7 +82,6 @@
             .then(data => {
                 if (data.status === 'success') {
                     const resultsDiv = document.getElementById('voteResults');
-                    resultsDiv.style.display = 'block';
                     let resultsHtml = '';
                     for (const [menu, count] of Object.entries(data.votes)) {
                         resultsHtml += `<li>${menu}: ${count} votes</li>`;
