@@ -8,4 +8,4 @@ class Vote(models.Model):
     date = models.DateField(default=timezone.now)
 
     class Meta:
-        unique_together = ('user', 'date')  # One vote per day
+        unique_together = ('user', 'date')  # One vote per menu item per day

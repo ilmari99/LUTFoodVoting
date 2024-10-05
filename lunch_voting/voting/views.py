@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from .forms import CustomUserCreationForm
+from django.contrib.auth import logout
 
 
 # Load vote counts from JSON file
@@ -30,7 +31,7 @@ def lunch_menu_view(request):
 
         if True:
             # Save the user's vote
-            Vote.objects.create(user=request.user, menu_item=menu_item)
+            #Vote.objects.create(user=request.user, menu_item=menu_item)
             
             # Update vote count in the JSON file
             votes = load_votes()
@@ -44,6 +45,11 @@ def lunch_menu_view(request):
 
     votes = load_votes()
     return render(request, 'voting/lunch_menu.html', {"votes": votes, "user_has_voted": user_has_voted, "username": request.user.username})
+
+@login_required
+def logout_view(request):
+    logout(request)
+    return redirect('login')  # Redirect to the login page after logout
 
 
 def register_view(request):
