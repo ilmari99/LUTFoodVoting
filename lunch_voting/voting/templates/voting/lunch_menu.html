@@ -30,11 +30,10 @@
         </div>
     </div>
     
-    
     <form id="voteForm" method="POST">
         {% csrf_token %}
-        {% for menu, count in votes.items %}
-            <input type="radio" name="menu_item" value="{{ menu }}">{{ menu }}<br>
+        {% for place, menu_count in votes.items %}
+            <input type="radio" name="menu_item" value="{{ place }}">{{ place }} - {{ menu_count.0 }}<br>
         {% endfor %}
         <button type="submit">Vote</button>
     </form>
@@ -43,8 +42,8 @@
         <h2>Vote Results:</h2>
         <ul>
             {% if votes %}
-                {% for menu, count in votes.items %}
-                    <li>{{ menu }}: {{ count }} votes</li>
+                {% for place, menu_count in votes.items %}
+                    <li>{{ place }} - {{ menu_count.0 }}: {{ menu_count.1 }} votes</li>
                 {% empty %}
                     <li>No votes yet.</li>
                 {% endfor %}
@@ -81,8 +80,8 @@
                 if (data.status === 'success') {
                     const resultsDiv = document.getElementById('voteResults');
                     let resultsHtml = '';
-                    for (const [menu, count] of Object.entries(data.votes)) {
-                        resultsHtml += `<li>${menu}: ${count} votes</li>`;
+                    for (const [place, [menu, count]] of Object.entries(data.votes)) {
+                        resultsHtml += `<li>${place} - ${menu}: ${count} votes</li>`;
                     }
                     resultsDiv.querySelector('ul').innerHTML = resultsHtml;
                 }

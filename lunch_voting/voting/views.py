@@ -27,7 +27,8 @@ def lunch_menu_view(request):
 
     # After the user has voted, the page will display the vote counts
     if request.method == "POST":
-        menu_item = request.POST.get("menu_item")
+        restaurant = request.POST.get("menu_item")
+        print(f"User {request.user.username} voted for {restaurant}")
 
         if True:
             # Save the user's vote
@@ -35,15 +36,16 @@ def lunch_menu_view(request):
             
             # Update vote count in the JSON file
             votes = load_votes()
-            if menu_item in votes:
-                votes[menu_item] += 1
+            if restaurant in votes:
+                votes[restaurant][1] += 1
             else:
-                votes[menu_item] = 1
+                votes[restaurant][1] = 1
             save_votes(votes)
 
             return JsonResponse({"status": "success", "votes": votes})
 
     votes = load_votes()
+    print(f"Votes: {votes}")
     return render(request, 'voting/lunch_menu.html', {"votes": votes, "user_has_voted": user_has_voted, "username": request.user.username})
 
 def logout_view(request):
