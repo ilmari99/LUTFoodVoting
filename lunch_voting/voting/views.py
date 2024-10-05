@@ -46,10 +46,10 @@ def lunch_menu_view(request):
     votes = load_votes()
     return render(request, 'voting/lunch_menu.html', {"votes": votes, "user_has_voted": user_has_voted, "username": request.user.username})
 
-@login_required
 def logout_view(request):
     logout(request)
-    return redirect('login')  # Redirect to the login page after logout
+    print(f"Logged out user")
+    return redirect('lunch_menu')
 
 
 def register_view(request):

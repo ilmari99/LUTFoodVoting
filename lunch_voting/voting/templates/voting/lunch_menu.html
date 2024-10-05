@@ -23,15 +23,13 @@
 </head>
 <body>
     <div class="header">
-        <h1>Today's Lunch Menus</h1>
+        <h1>Vote for Lunch Menu</h1>
         <div class="user-info">
-            <span>Logged in as {{ username }}</span>
-            <form id="logoutForm" method="POST" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <button type="submit">Logout</button>
-            </form>
+            <span>{{ user.username }}</span>
+            <a href="{% url 'logout' %}">Logout</a>
         </div>
     </div>
+    
     
     <form id="voteForm" method="POST">
         {% csrf_token %}
