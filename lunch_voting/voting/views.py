@@ -25,21 +25,43 @@ def lunch_menu_view(request):
     today = timezone.now().date()
     user_has_voted = Vote.objects.filter(user=request.user, date=today).exists()
 
+    # Update vote count in the JSON file
+    votes = load_votes()
+
     # After the user has voted, the page will display the vote counts
     if request.method == "POST":
-        restaurant = request.POST.get("menu_item")
-        print(f"User {request.user.username} voted for {restaurant}")
+        # The user submits a vote, that gives a single vote (1-5) to one of the restaurants
+        restaurants = votes.keys()
+        # Get the given ratings for each restaurant
+        print(f"Restaurants: {restaurants}")
+        print(f"POST: {request.POST}")
+        ratings = {}
+        for restaurant in restaurants:
+            try:
+                print(f"Rating: {request.POST.get(f'{restaurant}_rating')}")
+                rating = int(request.POST.get(f"{restaurant}_rating"))
+            except:
+                print(f"Rating not found for {restaurant}")
+                rating = 0
+            ratings[restaurant] = rating
+
+        print(f"Ratings: {ratings}")
 
         if True:
             # Save the user's vote
             #Vote.objects.create(user=request.user, menu_item=menu_item)
             
-            # Update vote count in the JSON file
-            votes = load_votes()
-            if restaurant in votes:
-                votes[restaurant][1] += 1
-            else:
-                votes[restaurant][1] = 1
+            # {"r1" : [food, ratings_sum, count], "r2" : [food, ratings_sum, count]}
+            # Update all restaurants whose rating != 0
+            for restaurant, rating in ratings.items():
+                if rating != 0:
+                    votes[restaurant][1] += rating
+                    votes[restaurant][2] += 1
+                    # update the average rating
+                    if len(votes[restaurant]) == 3:
+                        votes[restaurant].append(rating)
+                    else:
+                        votes[restaurant][3] = round(votes[restaurant][1] / votes[restaurant][2], 2)
             save_votes(votes)
 
             return JsonResponse({"status": "success", "votes": votes})
