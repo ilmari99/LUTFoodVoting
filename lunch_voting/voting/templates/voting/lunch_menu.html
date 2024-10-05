@@ -1,9 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token }}">
     <title>Vote for Lunch Menu</title>
+
     <style>
         .header {
             display: flex;
@@ -19,9 +21,15 @@
         .user-info span {
             margin-right: 10px;
         }
+        .background-image {
+            background-image: url("{% static 'voting/images/background.jpeg' %}");
+            background-size: cover;
+            background-position: center;
+            height: 100vh;
+        }
     </style>
 </head>
-<body>
+<body class="background-image">
     <div class="header">
         <h1>Vote for Lunch Menu</h1>
         <div class="user-info">
@@ -33,7 +41,17 @@
     <form id="voteForm" method="POST">
         {% csrf_token %}
         {% for place, menu_count in votes.items %}
-            <input type="radio" name="menu_item" value="{{ place }}">{{ place }} - {{ menu_count.0 }}<br>
+            <div>
+                <label>{{ place }} - {{ menu_count.0 }}</label><br>
+                <input type="hidden" name="restaurant" value="{{ place }}">
+                <div class="star-rating">
+                    <input type="radio" name="{{ place }}_rating" value="1"> 1
+                    <input type="radio" name="{{ place }}_rating" value="2"> 2
+                    <input type="radio" name="{{ place }}_rating" value="3"> 3
+                    <input type="radio" name="{{ place }}_rating" value="4"> 4
+                    <input type="radio" name="{{ place }}_rating" value="5"> 5
+                </div>
+            </div>
         {% endfor %}
         <button type="submit">Vote</button>
     </form>
@@ -43,7 +61,7 @@
         <ul>
             {% if votes %}
                 {% for place, menu_count in votes.items %}
-                    <li>{{ place }} - {{ menu_count.0 }}: {{ menu_count.1 }} votes</li>
+                    <li>{{ place }} - {{ menu_count.0 }}: {{ menu_count.2 }} votes, Average Rating: {{ menu_count.3 }}</li>
                 {% empty %}
                     <li>No votes yet.</li>
                 {% endfor %}
@@ -54,16 +72,25 @@
     </div>
     <script>
         fetch('C:\\Users\\ilmari\\Desktop\\Python\\LUTFoodVoting\\lunch_voting\\voting\\lunch_menus.json')
-            .then(response => response.json())
-            .then(data => {
-                const form = document.getElementById('voteForm');
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                form.innerHTML = `<input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">`;
-                data.menus.forEach(menu => {
-                    form.innerHTML += `<input type="radio" name="menu_item" value="${menu}">${menu}<br>`;
-                });
-                form.innerHTML += '<button type="submit">Vote</button>';
-            });
+        .then(response => response.json())
+        .then(data => {
+            const voteForm = document.getElementById('voteForm');
+            for (const [place, menu] of Object.entries(data)) {
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <label>${place} - ${menu}</label><br>
+                <input type="hidden" name="restaurant" value="${place}">
+                <div class="star-rating">
+                <input type="radio" name="${place}_rating" value="1"> 1
+                <input type="radio" name="${place}_rating" value="2"> 2
+                <input type="radio" name="${place}_rating" value="3"> 3
+                <input type="radio" name="${place}_rating" value="4"> 4
+                <input type="radio" name="${place}_rating" value="5"> 5
+                </div>
+            `;
+            voteForm.appendChild(div);
+            }
+        });
 
         document.getElementById('voteForm').onsubmit = function(event) {
             event.preventDefault();
@@ -77,14 +104,16 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'success') {
-                    const resultsDiv = document.getElementById('voteResults');
-                    let resultsHtml = '';
-                    for (const [place, [menu, count]] of Object.entries(data.votes)) {
-                        resultsHtml += `<li>${place} - ${menu}: ${count} votes</li>`;
-                    }
-                    resultsDiv.querySelector('ul').innerHTML = resultsHtml;
-                }
+                const voteResults = document.getElementById('voteResults');
+                console.log(data);
+                voteResults.innerHTML = `
+                    <h2>Vote Results:</h2>
+                    <ul>
+                        ${Object.entries(data.votes).map(([place, menu_count]) => `
+                            <li>${place} - ${menu_count[0]}: ${menu_count[2]} votes, Average Rating: ${menu_count[3]}</li>
+                        `).join('')}
+                    </ul>
+                `;
             });
         }
     </script>
