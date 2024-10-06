@@ -78,6 +78,36 @@
             font-size: 1.2rem;
             margin-left: 165px;
         }
+        .chatgpt-div {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 100%;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.0);
+            border-radius: 8px;
+            max-width: 400px;
+        }
+        .chatgpt-speech-bubble {
+            position: relative;
+            display: inline-block;
+            background-color: #beb0b0;
+            border-radius: 10px;
+            padding: 10px;
+            max-width: 200px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+        }
+        .chatgpt-speech-bubble::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: -10px;
+            width: 0;
+            height: 0;
+            border-right: 10px solid #beb0b0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+        }
 
     </style>
 </head>
@@ -126,6 +156,15 @@
                 <li>No votes yet.</li>
             {% endif %}
         </ul>
+    </div>
+
+    <div class="chatgpt-div">
+        <div id="chatgpt"></div>
+            <img src="{% static 'voting/images/robot.jpg' %}" alt="ChatGPT Robot" style="width: 100px; height: 100px; background: transparent;">
+        <div class="chatgpt-speech-bubble">
+            <p>{{ chat_gpt_recommendation }}</p>
+        </div>
+        </div>
     </div>
     
     <script>

@@ -1,4 +1,6 @@
 import json
+import os
+from typing import List
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.utils import timezone
@@ -9,6 +11,26 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login
 from .forms import CustomUserCreationForm
 from django.contrib.auth import logout
+
+from openai import OpenAI
+
+with open("openai-token.txt", "r") as f:
+    OPENAI_TOKEN = f.read().strip()
+    os.environ["OPENAI_API_KEY"] = OPENAI_TOKEN
+
+OPENAI_CLIENT = OpenAI()
+
+def get_best_food(foods : List[str]) -> str:
+    response = OPENAI_CLIENT.chat.completions.create(
+        model="gpt-4",
+        messages=[
+            {"role": "system", "content": "You are a food critic and you are evaluating which food is the best. You have tasted all of them, and now it's time to choose the best option. Respond briefly."},
+            {"role": "user", "content": f"Choose from the following: {', '.join(foods)}"}
+        ],
+    )
+    print(f"Response: {response}")
+    response = str(response.choices[0].message.content)
+    return response
 
 
 # Load vote counts from JSON file
@@ -27,6 +49,8 @@ def lunch_menu_view(request):
 
     # Update vote count in the JSON file
     votes = load_votes()
+
+    chat_gpt_recommendation = get_best_food([rest + ": " + fdata[0] for rest, fdata in votes.items() if len(fdata) > 3])
 
     # After the user has voted, the page will display the vote counts
     if request.method == "POST":
@@ -64,11 +88,11 @@ def lunch_menu_view(request):
                         votes[restaurant][3] = round(votes[restaurant][1] / votes[restaurant][2], 1)
             save_votes(votes)
 
-            return JsonResponse({"status": "success", "votes": votes})
+            return JsonResponse({"status": "success", "votes": votes, "chat_gpt_recommendation": chat_gpt_recommendation})
 
     votes = load_votes()
     print(f"Votes: {votes}")
-    return render(request, 'voting/lunch_menu.html', {"votes": votes, "user_has_voted": user_has_voted, "username": request.user.username})
+    return render(request, 'voting/lunch_menu.html', {"votes": votes, "user_has_voted": user_has_voted, "username": request.user.username, "chat_gpt_recommendation": chat_gpt_recommendation})
 
 def logout_view(request):
     logout(request)
