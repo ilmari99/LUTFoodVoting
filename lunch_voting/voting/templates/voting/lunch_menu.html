@@ -36,7 +36,7 @@
             background-image: url("{% static 'voting/images/background.jpeg' %}");
             background-size: contain; /* Makes sure the image covers the entire container */
             background-position: center;
-            opacity: 0.6; /* Adjust the transparency */
+            opacity: 1; /* Adjust the transparency */
             position: absolute;
             top: 0;
             left: 0;
@@ -227,17 +227,24 @@
             })
             .then(response => response.json())
             .then(data => {
-                const voteResults = document.getElementById('voteResults');
-                voteResults.innerHTML = `
-                    <h2>Vote Results:</h2>
-                    <ul>
-                        ${Object.entries(data.votes).map(([place, menu_count]) => `
-                            <li>${place} - ${menu_count[0]}: ${menu_count[2]} votes, Average Rating: ${menu_count[3]}</li>
-                        `).join('')}
-                    </ul>
-                `;
+                // Update chart data with new votes
+                let newLabels = [];
+                let newAverageRatings = [];
+        
+                Object.entries(data.votes).forEach(([place, menu_count]) => {
+                    newLabels.push(place);
+                    newAverageRatings.push(menu_count[3]);  // Average rating
+                });
+        
+                // Update the chart's labels and data
+                averageRatingChart.data.labels = newLabels;
+                averageRatingChart.data.datasets[0].data = newAverageRatings;
+        
+                // Redraw the chart with updated data
+                averageRatingChart.update();
             });
         }
+        
     </script>
 </body>
 </html>
