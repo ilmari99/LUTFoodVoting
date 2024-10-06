@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="csrf-token" content="{{ csrf_token }}">
-    <title>Vote for Lunch Menu</title>
+    <title>How good is the food at LUT today?</title>
 
     <style>
         .header {
@@ -13,17 +13,20 @@
             align-items: center;
             padding: 10px;
             background-color: #f8f9fa;
+            opacity: 0;
         }
         .user-info {
             display: flex;
-            align-items: center;
-        }
-        .user-info span {
-            margin-right: 10px;
+            justify-content: space-between;
+            align-items: right;
+            padding: 10px;
+            position: absolute;
+            top: 0;
+            right: 0;
         }
         .background-image {
             background-image: url("{% static 'voting/images/background.jpeg' %}");
-            background-size: cover;
+            background-size: contain;
             background-position: center;
             height: 100vh;
             opacity: 0.6;
@@ -33,36 +36,90 @@
             margin-top: 5px;
             opacity: 1;
         }
+        /* Spacing for restaurant items */
+        .restaurant-item {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.84);
+            border-radius: 8px;
+            max-width: 300px;
+            margin-left: 0;
+            margin-right: auto;
+        }
+        .star-rating {
+            direction: rtl;
+            display: inline-block;
+            font-size: 2rem;
+        }
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+        .star-rating label {
+            color: #ccc;
+            font-size: 2rem;
+            padding: 0 5px;
+            cursor: pointer;
+        }
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input[type="radio"]:checked ~ label {
+            color: #f39c12;
+        }
+        .vote-results {
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            max-width: 300px;
+            position: absolute;
+            top: 50px;
+            right: 10px;
+        }
+        .send-rating-btn {
+            padding: 15px 30px;
+            background-color: #bd5345;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin-left: 165px;
+        }
+
     </style>
 </head>
 <body class="background-image">
-    <div class="header">
-        <h1>Vote for Lunch Menu</h1>
-        <div class="user-info">
-            <span>{{ user.username }}</span>
-            <a href="{% url 'logout' %}">Logout</a>
+    <div>
+        <h1>How good was the food at LUT today?</h1>
+        <div class="user-info" style="text-align: right;">
+            <!-- <span>Logged in as {{ user.username }}</span> -->
+            <form action="{% url 'logout' %}" method="post" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit">Logout</button>
+            </form>
         </div>
     </div>
     
     <form id="voteForm" method="POST">
         {% csrf_token %}
         {% for place, menu_count in votes.items %}
-            <div>
-                <label>{{ place }} - {{ menu_count.0 }}</label><br>
+            <div class="restaurant-item">
+                <img src="{% static 'voting/images/' %}{{ place }}.jpg" alt="Restaurant Icon" style="width: 160px; height: 120px; vertical-align: middle;"><br>
+                <label style="font-size: 1.5rem; font-weight: bold;">{{ place }}</label><br>
+                <label style="font-size: 1.2rem; color: #424242;">{{ menu_count.0 }}</label><br>
                 <input type="hidden" name="restaurant" value="{{ place }}">
                 <div class="star-rating">
-                    <input type="radio" name="{{ place }}_rating" value="1"> 1
-                    <input type="radio" name="{{ place }}_rating" value="2"> 2
-                    <input type="radio" name="{{ place }}_rating" value="3"> 3
-                    <input type="radio" name="{{ place }}_rating" value="4"> 4
-                    <input type="radio" name="{{ place }}_rating" value="5"> 5
+                    <input type="radio" name="{{ place }}_rating" value="5" id="{{ place }}-5"><label for="{{ place }}-5">★</label>
+                    <input type="radio" name="{{ place }}_rating" value="4" id="{{ place }}-4"><label for="{{ place }}-4">★</label>
+                    <input type="radio" name="{{ place }}_rating" value="3" id="{{ place }}-3"><label for="{{ place }}-3">★</label>
+                    <input type="radio" name="{{ place }}_rating" value="2" id="{{ place }}-2"><label for="{{ place }}-2">★</label>
+                    <input type="radio" name="{{ place }}_rating" value="1" id="{{ place }}-1"><label for="{{ place }}-1">★</label>
                 </div>
             </div>
         {% endfor %}
-        <button type="submit">Vote</button>
+        <button class="send-rating-btn" type="submit">Vote</button>
     </form>
 
-    <div id="voteResults" style="display: block;">
+    <div id="voteResults" class="vote-results">
         <h2>Vote Results:</h2>
         <ul>
             {% if votes %}
@@ -76,28 +133,8 @@
             {% endif %}
         </ul>
     </div>
+    
     <script>
-        fetch('C:\\Users\\ilmari\\Desktop\\Python\\LUTFoodVoting\\lunch_voting\\voting\\lunch_menus.json')
-        .then(response => response.json())
-        .then(data => {
-            const voteForm = document.getElementById('voteForm');
-            for (const [place, menu] of Object.entries(data)) {
-            const div = document.createElement('div');
-            div.innerHTML = `
-                <label>${place} - ${menu}</label><br>
-                <input type="hidden" name="restaurant" value="${place}">
-                <div class="star-rating">
-                <input type="radio" name="${place}_rating" value="1"> 1
-                <input type="radio" name="${place}_rating" value="2"> 2
-                <input type="radio" name="${place}_rating" value="3"> 3
-                <input type="radio" name="${place}_rating" value="4"> 4
-                <input type="radio" name="${place}_rating" value="5"> 5
-                </div>
-            `;
-            voteForm.appendChild(div);
-            }
-        });
-
         document.getElementById('voteForm').onsubmit = function(event) {
             event.preventDefault();
             const formData = new FormData(this);
@@ -111,7 +148,6 @@
             .then(response => response.json())
             .then(data => {
                 const voteResults = document.getElementById('voteResults');
-                console.log(data);
                 voteResults.innerHTML = `
                     <h2>Vote Results:</h2>
                     <ul>

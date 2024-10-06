@@ -61,7 +61,7 @@ def lunch_menu_view(request):
                     if len(votes[restaurant]) == 3:
                         votes[restaurant].append(rating)
                     else:
-                        votes[restaurant][3] = round(votes[restaurant][1] / votes[restaurant][2], 2)
+                        votes[restaurant][3] = round(votes[restaurant][1] / votes[restaurant][2], 1)
             save_votes(votes)
 
             return JsonResponse({"status": "success", "votes": votes})
