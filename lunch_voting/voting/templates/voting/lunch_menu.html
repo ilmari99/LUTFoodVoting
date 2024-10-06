@@ -121,52 +121,40 @@
     </form>
 
     <div id="voteResults" class="vote-results">
-        <h2>Vote Results:</h2>
-        <canvas id="voteChart"></canvas>
+        <h2>Average Ratings:</h2>
+        <canvas id="averageRatingChart"></canvas>
     
         <script>
-            // Prepare vote data
+            // Prepare vote data (only average ratings)
             var voteLabels = [];
-            var voteData = [];
-            var voteRatings = [];
+            var averageRatings = [];
     
             {% if votes %}
                 {% for place, menu_count in votes.items %}
                     voteLabels.push('{{ place }}');  // Place name
-                    voteData.push('{{ menu_count.2 }}');  // Number of votes
-                    voteRatings.push('{{ menu_count.3 }}');  // Average rating
+                    averageRatings.push('{{ menu_count.3 }}');  // Average rating
                 {% endfor %}
             {% endif %}
     
             // Configure the chart
-            var ctx = document.getElementById('voteChart').getContext('2d');
-            var voteChart = new Chart(ctx, {
+            var ctx = document.getElementById('averageRatingChart').getContext('2d');
+            var averageRatingChart = new Chart(ctx, {
                 type: 'bar',
                 data: {
                     labels: voteLabels,
                     datasets: [{
-                        label: 'Votes',
-                        data: voteData,
-                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
+                        label: 'Average Rating',
+                        data: averageRatings,
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        borderColor: 'rgba(153, 102, 255, 1)',
                         borderWidth: 1
                     }]
                 },
                 options: {
                     scales: {
                         y: {
-                            beginAtZero: true
-                        }
-                    },
-                    plugins: {
-                        tooltip: {
-                            callbacks: {
-                                afterBody: function(tooltipItems) {
-                                    // Add average rating to the tooltip
-                                    var index = tooltipItems[0].dataIndex;
-                                    return 'Average Rating: ' + voteRatings[index];
-                                }
-                            }
+                            beginAtZero: true,
+                            max: 5  // Assuming ratings are out of 5
                         }
                     }
                 }
