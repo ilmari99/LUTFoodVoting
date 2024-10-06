@@ -22,9 +22,9 @@ OPENAI_CLIENT = OpenAI()
 
 def get_best_food(foods : List[str]) -> str:
     response = OPENAI_CLIENT.chat.completions.create(
-        model="gpt-4",
+        model="gpt-4o",
         messages=[
-            {"role": "system", "content": "You are a food critic and you are evaluating which food is the best. You have tasted all of them, and now it's time to choose the best option. Respond briefly."},
+            {"role": "system", "content": "You are a food critic and you are evaluating which food is the best. You have tasted all of them, and now it's time to recommend one. Respond with one funny sentence."},
             {"role": "user", "content": f"Choose from the following: {', '.join(foods)}"}
         ],
     )
