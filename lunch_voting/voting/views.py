@@ -73,7 +73,7 @@ def lunch_menu_view(request):
 
         if True:
             # Save the user's vote
-            #Vote.objects.create(user=request.user, menu_item=menu_item)
+            # Vote.objects.create(user=request.user, menu_item=ratings)
             
             # {"r1" : [food, ratings_sum, count], "r2" : [food, ratings_sum, count]}
             # Update all restaurants whose rating != 0

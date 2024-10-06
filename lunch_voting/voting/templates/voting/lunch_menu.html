@@ -29,7 +29,7 @@
             position: relative;
             height: 100vh;
             overflow: hidden;
-            background-image: url("{% static 'voting/images/background.jpeg' %}");
+            background-image: url("{% static 'voting/images/background.jpeg' %}?{{ timestamp }}");
             background-size: contain; /* Makes sure the image covers the entire container */
             background-position: center;
             opacity: 1; /* Adjust the transparency */
@@ -47,11 +47,12 @@
         .restaurant-item {
             margin-bottom: 20px;
             padding: 10px;
-            background-color: rgba(255, 255, 255, 0.84);
+            background-color: rgba(255, 255, 255, 0.85);
             border-radius: 8px;
-            max-width: 300px;
+            max-width: 330px;
             margin-left: 0;
             margin-right: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9); /* Added shadow */
         }
         .star-rating {
             direction: rtl;
@@ -80,6 +81,7 @@
             position: absolute;
             top: 50px;
             right: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.9); /* Added shadow */
         }
         .send-rating-btn {
             padding: 15px 30px;
@@ -93,13 +95,19 @@
         }
         .chatgpt-div {
             position: absolute;
-            bottom: 120px;
+            bottom: 160px;
             right: 10px;
             width: 100%;
             padding: 10px;
             background-color: rgba(255, 255, 255, 0.0);
             border-radius: 8px;
             max-width: 400px;
+        }
+        .chatgpt-image-style {
+            width: 100px;
+            height: 100px;
+            background: transparent;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5); /* Added shadow */
         }
         .chatgpt-speech-bubble {
             position: relative;
@@ -113,13 +121,14 @@
         .chatgpt-speech-bubble::before {
             content: '';
             position: absolute;
-            top: 10px;
-            left: -10px;
+            top: 50%;
+            right: 100%;
+            margin-top: -15px;
             width: 0;
             height: 0;
-            border-right: 10px solid #beb0b0;
-            border-top: 10px solid transparent;
-            border-bottom: 10px solid transparent;
+            border-top: 15px solid transparent;
+            border-right: 15px solid #beb0b0;
+            border-bottom: 15px solid transparent;
         }
 
     </style>
@@ -231,7 +240,7 @@
 
     <div class="chatgpt-div">
         <div id="chatgpt"></div>
-            <img src="{% static 'voting/images/robot.jpg' %}" alt="AI" style="width: 100px; height: 100px; background: transparent;">
+            <img src="{% static 'voting/images/robot.jpg' %}" alt="AI" class="chatgpt-image-style">
         <div class="chatgpt-speech-bubble">
             <p>{{ chat_gpt_recommendation }}</p>
         </div>
