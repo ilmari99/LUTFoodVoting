@@ -29,17 +29,10 @@
             position: relative;
             height: 100vh;
             overflow: hidden;
-        }
-        
-        .background-image::after {
-            content: '';
             background-image: url("{% static 'voting/images/background.jpeg' %}");
             background-size: contain; /* Makes sure the image covers the entire container */
             background-position: center;
             opacity: 1; /* Adjust the transparency */
-            position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
             z-index: -1; /* Ensures the background is behind the content */
@@ -80,10 +73,10 @@
             color: #f39c12;
         }
         .vote-results {
-            padding: 10px;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 8px;
-            max-width: 300px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 12px;
+            max-width: 600px;
             position: absolute;
             top: 50px;
             right: 10px;
@@ -100,8 +93,8 @@
         }
         .chatgpt-div {
             position: absolute;
-            bottom: 0;
-            right: 0;
+            bottom: 120px;
+            right: 10px;
             width: 100%;
             padding: 10px;
             background-color: rgba(255, 255, 255, 0.0);
@@ -114,8 +107,8 @@
             background-color: #beb0b0;
             border-radius: 10px;
             padding: 10px;
-            max-width: 200px;
-            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            max-width: 260px;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.9);
         }
         .chatgpt-speech-bubble::before {
             content: '';
@@ -171,11 +164,13 @@
             // Prepare vote data (only average ratings)
             var voteLabels = [];
             var averageRatings = [];
+            var voteCounts = [];
     
             {% if votes %}
                 {% for place, menu_count in votes.items %}
                     voteLabels.push('{{ place }}');  // Place name
                     averageRatings.push('{{ menu_count.3 }}');  // Average rating
+                    voteCounts.push('{{ menu_count.2 }}');  // Total votes
                 {% endfor %}
             {% endif %}
     
@@ -188,7 +183,7 @@
                     datasets: [{
                         label: 'Average Rating',
                         data: averageRatings,
-                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.6)',
                         borderColor: 'rgba(153, 102, 255, 1)',
                         borderWidth: 1
                     }]
@@ -204,10 +199,39 @@
             });
         </script>
     </div>
+    <div id="voteCountsResults" class="vote-results" style="top: 300px;">
+        <h2>Vote Counts:</h2>
+        <canvas id="voteCountsChart"></canvas>
+
+        <script>
+            // Configure the vote counts chart
+            var ctx2 = document.getElementById('voteCountsChart').getContext('2d');
+            var voteCountsChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: voteLabels,
+                    datasets: [{
+                        label: 'Vote Counts',
+                        data: voteCounts,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
+    </div>
 
     <div class="chatgpt-div">
         <div id="chatgpt"></div>
-            <img src="{% static 'voting/images/robot.jpg' %}" alt="ChatGPT Robot" style="width: 100px; height: 100px; background: transparent;">
+            <img src="{% static 'voting/images/robot.jpg' %}" alt="AI" style="width: 100px; height: 100px; background: transparent;">
         <div class="chatgpt-speech-bubble">
             <p>{{ chat_gpt_recommendation }}</p>
         </div>
@@ -217,6 +241,7 @@
     <script>
         document.getElementById('voteForm').onsubmit = function(event) {
             event.preventDefault();
+            // Send the vote data to the server
             const formData = new FormData(this);
             fetch('', {
                 method: 'POST',
@@ -230,21 +255,28 @@
                 // Update chart data with new votes
                 let newLabels = [];
                 let newAverageRatings = [];
-        
+                let newVoteCounts = [];
+
                 Object.entries(data.votes).forEach(([place, menu_count]) => {
                     newLabels.push(place);
                     newAverageRatings.push(menu_count[3]);  // Average rating
+                    newVoteCounts.push(menu_count[2]);  // Total votes
                 });
-        
-                // Update the chart's labels and data
+
+                // Update the average rating chart's labels and data
                 averageRatingChart.data.labels = newLabels;
                 averageRatingChart.data.datasets[0].data = newAverageRatings;
-        
-                // Redraw the chart with updated data
+
+                // Update the vote counts chart's labels and data
+                voteCountsChart.data.labels = newLabels;
+                voteCountsChart.data.datasets[0].data = newVoteCounts;
+
+                // Redraw the charts with updated data
                 averageRatingChart.update();
+                voteCountsChart.update();
             });
+            document.querySelectorAll('.star-rating input[type="radio"]').forEach(radio => radio.checked = false);
         }
-        
     </script>
 </body>
 </html>
